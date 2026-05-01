@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical AI Chat History</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1e3e 0%, #1a3a52 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            max-width: 900px;
+            margin: 0 auto 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            font-size: 1.1em;
+        }
+
+        .header p {
+            color: #b0c4de;
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            max-width: 900px;
+            margin: 0 auto 25px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .back-btn {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .back-btn:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .clear-btn:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+
+        .stats {
+            color: #b0c4de;
+            font-size: 0.9em;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .chat-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #b0c4de;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+
+        .empty-state p {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .chat-message {
+            background: rgba(255, 255, 255, 0.08);
+            border-left: 5px solid #1e8449;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-message:hover {
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transform: translateX(4px);
+        }
+
+        .message-wrapper {
+            display: grid;
+            gap: 16px;
+        }
+
+        .user-message {
+            margin-bottom: 12px;
+            padding: 12px 14px;
+            background: rgba(52, 152, 219, 0.15);
+            border-left: 3px solid #3498db;
+            border-radius: 6px;
+        }
+
+        .user-label {
+            color: #85c1e2;
+            font-weight: 700;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .user-text {
+            color: #d4e6f1;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .bot-message {
+            padding: 12px 14px;
+            background: rgba(46, 139, 87, 0.1);
+            border-left: 3px solid #27ae60;
+            border-radius: 6px;
+        }
+
+        .bot-label {
+            color: #1abc9c;
+            font-weight: 700;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bot-text {
+            color: #d5f4e6;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .metadata {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .timestamp {
+            color: #a0b8d8;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .message-number {
+            background: rgba(52, 152, 219, 0.2);
+            color: #5dade2;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                max-width: none;
+            }
+
+            .chat-message {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            <span class="header-icon">🏥</span>
+            Medical AI Chat History
+        </h1>
+        <p>Consultation Records & AI Responses</p>
+    </div>
+
+    <div class="controls">
+        <button class="back-btn" onclick="window.location.href = '/'">
+            ← Back to Chat
+        </button>
+        <div class="stats">📊 Total: {{ chats|length }} Chats</div>
+        <button class="clear-btn" onclick="if(confirm('Are you sure you want to delete all chat history?')) { window.location.href = '/clear_history'; }">
+            🗑️ Clear History
+        </button>
+    </div>
+
+    <div class="chat-container">
+        {% if chats %}
+            {% for chat in chats %}
+            <div class="chat-message">
+                <div class="message-wrapper">
+                    <div class="user-message">
+                        <div class="user-label">
+                            <span>👤</span> Patient Question
+                        </div>
+                        <div class="user-text">{{ chat.user }}</div>
+                    </div>
+
+                    <div class="bot-message">
+                        <div class="bot-label">
+                            <span>🤖</span> Medical AI Response
+                        </div>
+                        <div class="bot-text">{{ chat.bot }}</div>
+                    </div>
+                </div>
+
+                <div class="metadata">
+                    {% if chat.timestamp %}
+                    <div class="timestamp">
+                        <span>🕐</span> {{ chat.timestamp }}
+                    </div>
+                    {% endif %}
+                    <div class="message-number">#{{ loop.length - loop.index0 }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <p>No Chat History Yet</p>
+            <p style="font-size: 0.9em; opacity: 0.7;">Start a conversation to build your medical consultation records</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

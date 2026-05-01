@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MedAI Assistant</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Background with medical image */
+
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* Medical gradient + pattern overlay */
+    background:
+        linear-gradient(rgba(10, 110, 189, 0.85), rgba(13, 202, 240, 0.85)),
+        url('https://www.transparenttextures.com/patterns/medical-cross.png'),
+        url('https://images.unsplash.com/photo-1579684385127-1ef15d508118');
+
+    background-size: cover, 200px, cover;
+    background-position: center;
+    background-blend-mode: overlay;
+
+    animation: bgShift 12s ease-in-out infinite alternate;
+}
+
+/* Subtle animated breathing effect */
+@keyframes bgShift {
+    0% {
+        background-position: center;
+        filter: brightness(1);
+    }
+    100% {
+        background-position: top;
+        filter: brightness(1.1);
+    }
+}
+
+
+/* Chat Container */
+.chat-container {
+  width: 420px;
+  height: 650px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 0 25px 70px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  padding: 16px;
+  background: linear-gradient(135deg, #0a6ebd, #0dcaf0);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header img {
+  width: 38px;
+}
+
+.header h2 {
+  font-size: 16px;
+}
+
+.status {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* History Button */
+.history-btn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+/* Chat Box */
+.chat-box {
+  flex: 1;
+  padding: 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Messages */
+.message {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 80%;
+}
+
+.message-text {
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.user .message-text {
+  background: linear-gradient(135deg, #0a6ebd, #0dcaf0);
+  color: white;
+  border-bottom-right-radius: 6px;
+}
+
+.bot .message-text {
+  background: #f1f5f9;
+  color: #333;
+  border-bottom-left-radius: 6px;
+}
+
+/* Avatar */
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+/* Typing dots */
+.typing {
+  display: flex;
+  gap: 4px;
+}
+
+.typing span {
+  width: 6px;
+  height: 6px;
+  background: #999;
+  border-radius: 50%;
+  animation: bounce 1.2s infinite;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* Input Area */
+.input-area {
+  display: flex;
+  padding: 12px;
+  background: white;
+  border-top: 1px solid #eee;
+}
+
+input {
+  flex: 1;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  outline: none;
+}
+
+button {
+  margin-left: 10px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0a6ebd, #0dcaf0);
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-container">
+
+  <div class="header">
+    <div class="header-left">
+      <img src="https://cdn-icons-png.flaticon.com/512/387/387561.png">
+      <div>
+        <h2>MedAI Assistant</h2>
+        <div class="status">AI-powered medical support</div>
+      </div>
+    </div>
+    <button class="history-btn" onclick="window.location.href='/history'">History</button>
+  </div>
+
+  <div id="chat-box" class="chat-box"></div>
+
+  <div class="input-area">
+    <input id="user-input" placeholder="Describe your symptoms..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+</div>
+
+<script>
+function addMessage(text, type) {
+  let chatBox = document.getElementById("chat-box");
+
+  let msg = document.createElement("div");
+  msg.classList.add("message", type);
+
+  let avatar = document.createElement("img");
+  avatar.classList.add("avatar");
+  avatar.src = type === "user"
+    ? "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+    : "https://cdn-icons-png.flaticon.com/512/4712/4712027.png";
+
+  let textDiv = document.createElement("div");
+  textDiv.classList.add("message-text");
+  textDiv.innerText = text;
+
+  msg.appendChild(avatar);
+  msg.appendChild(textDiv);
+
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  return textDiv;
+}
+
+function showTyping() {
+  let chatBox = document.getElementById("chat-box");
+
+  let msg = document.createElement("div");
+  msg.classList.add("message", "bot");
+
+  let dots = document.createElement("div");
+  dots.classList.add("message-text", "typing");
+  dots.innerHTML = "<span></span><span></span><span></span>";
+
+  msg.appendChild(document.createElement("img")).className = "avatar";
+  msg.children[0].src = "https://cdn-icons-png.flaticon.com/512/4712/4712027.png";
+
+  msg.appendChild(dots);
+  chatBox.appendChild(msg);
+
+  return msg;
+}
+
+async function sendMessage() {
+  let input = document.getElementById("user-input");
+  let message = input.value.trim();
+  if (!message) return;
+
+  addMessage(message, "user");
+  input.value = "";
+
+  let typing = showTyping();
+
+  try {
+    const res = await fetch("/chat", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({message})
+    });
+
+    const data = await res.json();
+    typing.remove();
+
+    addMessage(data.response || "No response", "bot");
+
+  } catch {
+    typing.remove();
+    addMessage("Server error. Try again.", "bot");
+  }
+}
+
+document.getElementById("user-input")
+  .addEventListener("keypress", e => {
+    if (e.key === "Enter") sendMessage();
+  });
+</script>
+
+</body>
+</html>
